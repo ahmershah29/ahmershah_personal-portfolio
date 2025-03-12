@@ -1366,11 +1366,24 @@
   @media (max-width: 768px) {
     .dropdown-content {
       position: static;
-      box-shadow: none;
-      width: 100%; /* Ensure dropdown content is full width on mobile */
+      width: 100%;
+      display: none;
+      background: var(--rich-blue);
     }
+
     .dropdown-content.show {
-      display: block; /* Show dropdown content when .show class is added */
+      display: block;
+    }
+
+    .modal {
+      padding: 0;
+    }
+
+    .modal-content {
+      width: 95%;
+      margin: 10% auto;
+      max-height: 80vh;
+      overflow-y: auto;
     }
   }
   @keyframes fadeInUp {

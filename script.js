@@ -87,11 +87,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Modal functionality
-    document.querySelectorAll('.open-modal').forEach(button => {
-        button.addEventListener('click', function() {
-            const modalId = this.getAttribute('data-target');
-            document.getElementById(modalId).style.display = 'block';
+    // Modal functionality for all buttons including header buttons
+    document.querySelectorAll('.open-modal, .dropbtn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (this.classList.contains('dropbtn')) {
+                // Handle dropdown button
+                const dropdownContent = this.nextElementSibling;
+                dropdownContent.classList.toggle('show');
+                // Close other dropdowns
+                document.querySelectorAll('.dropdown-content').forEach(content => {
+                    if (content !== dropdownContent) {
+                        content.classList.remove('show');
+                    }
+                });
+            } else {
+                // Handle modal button
+                const modalId = this.getAttribute('data-target');
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.style.display = 'block';
+                    modal.querySelector('.modal-content').classList.add('rotate-in');
+                }
+            }
         });
     });
 
@@ -144,124 +163,129 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ensure the first slide is displayed initially
     showSlide(currentIndex);
 
-    var options = {
-        chart: {
-            type: 'bar',
-            height: 350,
-            toolbar: {
-                show: false
+    // Initialize chart only once when the DOM is loaded and if the container exists
+    const skillsChart = document.querySelector("#skillsChart");
+    if (skillsChart && !skillsChart.hasChildNodes()) {
+        var options = {
+            chart: {
+                type: 'bar',
+                height: 350,
+                toolbar: {
+                    show: false
+                },
+                background: '#f8f9fa',
+                foreColor: '#343a40',
+                animations: {
+                    enabled: true,
+                    easing: 'easeinout',
+                    speed: 800,
+                    animateGradually: {
+                        enabled: true,
+                        delay: 150
+                    },
+                    dynamicAnimation: {
+                        enabled: true,
+                        speed: 350
+                    }
+                }
             },
-            background: '#f8f9fa', // Light Gray background
-            foreColor: '#343a40', // Dark Gray text color
-            animations: {
+            series: [{
+                name: 'Skill Level',
+                data: [90, 85, 80, 75, 70, 65, 60]
+            }],
+            xaxis: {
+                categories: ['Frontend Development', 'UI/UX Design', 'Problem Solving', 'Artificial Intelligence', 'SEO Optimization', 'Backend Development', 'Containerization'],
+                labels: {
+                    style: {
+                        colors: ['#FF5733', '#C70039', '#900C3F', '#581845', '#1C1C1C', '#FF5733', '#C70039'],
+                        fontSize: '12px'
+                    },
+                    offsetX: -20
+                }
+            },
+            yaxis: {
+                max: 100,
+                labels: {
+                    style: {
+                        colors: '#343a40',
+                        fontSize: '12px'
+                    }
+                }
+            },
+            plotOptions: {
+                bar: {
+                    horizontal: true,
+                    columnWidth: '50%',
+                    endingShape: 'rounded'
+                }
+            },
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shade: 'dark',
+                    type: 'vertical',
+                    shadeIntensity: 0.5,
+                    gradientToColors: ['#FF5733', '#C70039', '#900C3F', '#581845', '#1C1C1C', '#FF5733', '#C70039'],
+                    inverseColors: true,
+                    opacityFrom: 0.8,
+                    opacityTo: 0.3,
+                    stops: [0, 20, 40, 60, 80, 100]
+                }
+            },
+            colors: ['#FF5733', '#C70039', '#900C3F', '#581845', '#1C1C1C', '#FF5733', '#C70039'],
+            dataLabels: {
                 enabled: true,
-                easing: 'easeinout',
-                speed: 800,
-                animateGradually: {
-                    enabled: true,
-                    delay: 150
-                },
-                dynamicAnimation: {
-                    enabled: true,
-                    speed: 350
-                }
-            }
-        },
-        series: [{
-            name: 'Skill Level',
-            data: [90, 85, 80, 75, 70, 65, 60]
-        }],
-        xaxis: {
-            categories: ['Frontend Development', 'UI/UX Design', 'Problem Solving', 'Artificial Intelligence', 'SEO Optimization', 'Backend Development', 'Containerization'],
-            labels: {
                 style: {
-                    colors: ['#FF5733', '#C70039', '#900C3F', '#581845', '#1C1C1C', '#FF5733', '#C70039'], // Premium colors
-                    fontSize: '12px'
-                },
-                offsetX: -20 // Further adjust the offset to ensure full text is visible
-            }
-        },
-        yaxis: {
-            max: 100,
-            labels: {
-                style: {
-                    colors: '#343a40', // Dark Gray text color
-                    fontSize: '12px'
+                    colors: ['#343a40'],
+                    fontSize: '14px',
+                    fontWeight: 'bold'
                 }
-            }
-        },
-        plotOptions: {
-            bar: {
-                horizontal: true, // Ensure the chart is horizontal
-                columnWidth: '50%',
-                endingShape: 'rounded'
-            }
-        },
-        fill: {
-            type: 'gradient',
-            gradient: {
-                shade: 'dark',
-                type: 'vertical',
-                shadeIntensity: 0.5,
-                gradientToColors: ['#FF5733', '#C70039', '#900C3F', '#581845', '#1C1C1C', '#FF5733', '#C70039'],
-                inverseColors: true,
-                opacityFrom: 0.8,
-                opacityTo: 0.3,
-                stops: [0, 20, 40, 60, 80, 100]
-            }
-        },
-        colors: ['#FF5733', '#C70039', '#900C3F', '#581845', '#1C1C1C', '#FF5733', '#C70039'], // Premium colors
-        dataLabels: {
-            enabled: true,
-            style: {
-                colors: ['#343a40'], // Dark Gray text color
-                fontSize: '14px',
-                fontWeight: 'bold'
-            }
-        },
-        tooltip: {
-            theme: 'dark',
-            y: {
-                formatter: function (val) {
-                    return val + "%";
-                }
-            }
-        },
-        grid: {
-            borderColor: '#e9ecef',
-            strokeDashArray: 4
-        },
-        responsive: [{
-            breakpoint: 768,
-            options: {
-                chart: {
-                    height: 300
-                },
-                plotOptions: {
-                    bar: {
-                        columnWidth: '70%'
+            },
+            tooltip: {
+                theme: 'dark',
+                y: {
+                    formatter: function (val) {
+                        return val + "%";
                     }
-                },
-                xaxis: {
-                    labels: {
-                        style: {
-                            fontSize: '10px'
+                }
+            },
+            grid: {
+                borderColor: '#e9ecef',
+                strokeDashArray: 4
+            },
+            responsive: [{
+                breakpoint: 768,
+                options: {
+                    chart: {
+                        height: 300
+                    },
+                    plotOptions: {
+                        bar: {
+                            columnWidth: '70%'
                         }
-                    }
-                },
-                yaxis: {
-                    labels: {
-                        style: {
-                            fontSize: '10px'
+                    },
+                    xaxis: {
+                        labels: {
+                            style: {
+                                fontSize: '10px'
+                            }
+                        }
+                    },
+                    yaxis: {
+                        labels: {
+                            style: {
+                                fontSize: '10px'
+                            }
                         }
                     }
                 }
-            }
-        }]
-    };
+            }]
+        };
 
-    var chart = new ApexCharts(document.querySelector("#skillsChart"), options);
-    chart.render();
+        // Create chart instance only once
+        var chart = new ApexCharts(skillsChart, options);
+        chart.render();
+    }
 
     const scrollToTopBtn = document.getElementById('scrollToTopBtn');
     window.addEventListener('scroll', () => {
@@ -360,7 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (typingAnimation) {
         typingAnimation.style.visibility = 'visible';
         typingAnimation.style.animation = 'none';
-        typingAnimation.style.animationIterationCount = '1'; // Animate only once
+        typingAnimation.style.animationIterationCount = '1';
     }
 
     // Initialize typing animation
@@ -369,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typingElement) {
             typingElement.style.visibility = 'visible';
         }
-    }, 500); // Short delay to ensure smooth animation start
+    }, 500);
 
     // Initialize typing animation after a short delay
     setTimeout(() => {
@@ -381,7 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Add class to remove cursor after animation completes
             setTimeout(() => {
                 typingElement.classList.add('typing-complete');
-            }, 4500); // Wait for typing animation to complete (3.5s + 1s delay)
+            }, 4500);
         }
     }, 1000);
 
@@ -454,4 +478,90 @@ document.addEventListener('DOMContentLoaded', () => {
             scrollbarThumb.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.2)';
         });
     }
+
+    // Three.js initialization for 3D animated background
+    let scene, camera, renderer, particles, particleSystem, controls;
+
+    function init() {
+        // Scene setup
+        scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x000000);
+
+        // Camera setup
+        camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.z = 5;
+
+        // Renderer setup
+        renderer = new THREE.WebGLRenderer({ 
+            antialias: true
+        });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        const homeSection = document.getElementById('home');
+        if (homeSection) {
+            homeSection.appendChild(renderer.domElement);
+        } else {
+            console.error('Home section not found');
+            return;
+        }
+
+        // Particle system setup
+        const particleCount = 1000;
+        particles = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+
+        for (let i = 0; i < particleCount; i++) {
+            positions[i * 3] = (Math.random() - 0.5) * 10;
+            positions[i * 3 + 1] = (Math.random() - 0.5) * 10;
+            positions[i * 3 + 2] = (Math.random() - 0.5) * 10;
+        }
+
+        particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+        const particleMaterial = new THREE.PointsMaterial({
+            color: 0xff6347,
+            size: 0.1,
+            transparent: true,
+            opacity: 0.8,
+        });
+
+        particleSystem = new THREE.Points(particles, particleMaterial);
+        scene.add(particleSystem);
+
+        // Light setup
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1);
+        pointLight.position.set(5, 5, 5);
+        scene.add(pointLight);
+
+        // Controls setup
+        controls = new THREE.TrackballControls(camera, renderer.domElement);
+        controls.noPan = true;
+        controls.noZoom = true;
+        controls.staticMoving = true;
+        controls.dynamicDampingFactor = 0.3;
+
+        // Window resize handler
+        window.addEventListener('resize', onWindowResize, false);
+
+        animate();
+    }
+
+    function onWindowResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function animate() {
+        requestAnimationFrame(animate);
+
+        particleSystem.rotation.y += 0.001;
+
+        controls.update();
+        renderer.render(scene, camera);
+    }
+
+    init();
 });

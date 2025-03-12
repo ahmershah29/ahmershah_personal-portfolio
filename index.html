@@ -55,6 +55,10 @@
   </script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
   <script src="anime.js"></script>
+  <!-- Add Three.js library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Add TrackballControls -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/TrackballControls.js"></script>
   <script src="script.js"></script>
 </head>
 <body>
@@ -363,10 +367,9 @@
           </div>
         </div>
       </div>
-      <br>
       <div id="skillsChart"></div>
     </div>
-  </section>
+</section>
   <section id="education">
   <div class="section-container">
     <h2 class="fade-in-up">Education <span class="emoji emoji-education">🎓</span></h2>
@@ -795,12 +798,10 @@
     </div>
   </div>
   <button class="scroll-to-top" id="scrollToTopBtn"><i class="fas fa-chevron-up"></i></button>
+  <!-- First load ApexCharts library -->
   <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
-  <script src="https://smtpjs.com/v3/smtp.js"></script>
-  <script>
-    function showMarksheetNotification() {
-      alert("Marksheets are not yet available as I am still in progress. Please check back after graduation!");
-    }
-  </script>
+  <!-- Then load script.js -->
+  <script src="script.js"></script>
+  <!-- Remove any duplicate script tags -->
 </body>
 </html>
