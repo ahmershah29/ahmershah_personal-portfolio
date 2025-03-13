@@ -58,32 +58,109 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(section);
     });
 
-    document.querySelector('.contact-form').addEventListener('submit', async (e) => {
+    // Create notification container if it doesn't exist
+    let notificationContainer = document.querySelector('.notification-container');
+    if (!notificationContainer) {
+        notificationContainer = document.createElement('div');
+        notificationContainer.className = 'notification-container';
+        document.body.appendChild(notificationContainer);
+    }
+
+    // Remove any existing form submit handlers
+    const contactForm = document.querySelector('.contact-form');
+    contactForm.replaceWith(contactForm.cloneNode(true));
+    
+    // Get the new form reference after cloning
+    const newContactForm = document.querySelector('.contact-form');
+    
+    // Add single event listener for contact form
+    newContactForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        const form = e.target;
-        const loadingDots = document.querySelector('.loading-dots');
+        
+        // Remove any existing notifications first
+        while (notificationContainer.firstChild) {
+            notificationContainer.removeChild(notificationContainer.firstChild);
+        }
+
+        const loadingDots = this.querySelector('.loading-dots');
         loadingDots.style.display = 'inline-block';
 
-        const formData = new FormData(form);
         try {
-            const response = await fetch(form.action, {
-                method: form.method,
-                body: formData,
+            const response = await fetch(this.action, {
+                method: this.method,
+                body: new FormData(this),
                 headers: {
                     'Accept': 'application/json'
                 }
             });
 
             loadingDots.style.display = 'none';
+            
+            // Create and show animated notification
+            const notification = document.createElement('div');
+            notification.className = `notification ${response.ok ? 'success' : 'error'}`;
+            notification.innerHTML = `
+                <div class="notification-icon">
+                    ${response.ok ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-circle"></i>'}
+                </div>
+                <div class="notification-content">
+                    <h3>${response.ok ? 'Success!' : 'Error!'}</h3>
+                    <p>${response.ok ? 'Thank you for your message! I will respond shortly.' : 'There was an error sending your message. Please try again later.'}</p>
+                </div>
+            `;
+
+            notificationContainer.appendChild(notification);
+
+            // Animate notification
+            anime.timeline({
+                targets: notification,
+                easing: 'easeOutElastic(1, .8)',
+            }).add({
+                translateX: [-50, 0],
+                opacity: [0, 1],
+                duration: 800
+            }).add({
+                delay: 3000,
+                translateX: [0, 50],
+                opacity: 0,
+                duration: 800,
+                complete: () => notification.remove()
+            });
+
             if (response.ok) {
-                alert('Thank you for your message! I will respond shortly.');
-                form.reset();
-            } else {
-                alert('There was an error sending your message. Please try again later.');
+                this.reset();
             }
         } catch (error) {
             loadingDots.style.display = 'none';
-            alert('There was an error sending your message. Please check your internet connection and try again.');
+            
+            const notification = document.createElement('div');
+            notification.className = 'notification error';
+            notification.innerHTML = `
+                <div class="notification-icon">
+                    <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="notification-content">
+                    <h3>Error!</h3>
+                    <p>Connection error. Please check your internet connection.</p>
+                </div>
+            `;
+
+            notificationContainer.appendChild(notification);
+
+            anime.timeline({
+                targets: notification,
+                easing: 'easeOutElastic(1, .8)',
+            }).add({
+                translateX: [-50, 0],
+                opacity: [0, 1],
+                duration: 800
+            }).add({
+                delay: 3000,
+                translateX: [0, 50],
+                opacity: 0,
+                duration: 800,
+                complete: () => notification.remove()
+            });
         }
     });
 
@@ -491,14 +568,23 @@ document.addEventListener('DOMContentLoaded', () => {
         camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
         camera.position.z = 5;
 
-        // Renderer setup
+        // Modified renderer setup
         renderer = new THREE.WebGLRenderer({ 
             antialias: true
         });
-        renderer.setSize(window.innerWidth, window.innerHeight);
         const homeSection = document.getElementById('home');
         if (homeSection) {
+            // Set renderer size to match home section dimensions
+            renderer.setSize(homeSection.offsetWidth, homeSection.offsetHeight);
             homeSection.appendChild(renderer.domElement);
+            
+            // Add style to canvas element
+            renderer.domElement.style.position = 'absolute';
+            renderer.domElement.style.top = '0';
+            renderer.domElement.style.left = '0';
+            renderer.domElement.style.width = '100%';
+            renderer.domElement.style.height = '100%';
+            renderer.domElement.style.zIndex = '-1';
         } else {
             console.error('Home section not found');
             return;
@@ -549,9 +635,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function onWindowResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        const homeSection = document.getElementById('home');
+        if (homeSection) {
+            camera.aspect = homeSection.offsetWidth / homeSection.offsetHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(homeSection.offsetWidth, homeSection.offsetHeight);
+        }
     }
 
     function animate() {
