@@ -59,29 +59,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Create notification container if it doesn't exist
-    let notificationContainer = document.querySelector('.notification-container');
-    if (!notificationContainer) {
-        notificationContainer = document.createElement('div');
+    if (!document.querySelector('.notification-container')) {
+        const notificationContainer = document.createElement('div');
         notificationContainer.className = 'notification-container';
         document.body.appendChild(notificationContainer);
     }
 
-    // Remove any existing form submit handlers
+    // Remove existing event listeners first
     const contactForm = document.querySelector('.contact-form');
-    contactForm.replaceWith(contactForm.cloneNode(true));
-    
-    // Get the new form reference after cloning
-    const newContactForm = document.querySelector('.contact-form');
+    contactForm.onsubmit = null;
     
     // Add single event listener for contact form
-    newContactForm.addEventListener('submit', async function(e) {
+    contactForm.addEventListener('submit', async function(e) {
         e.preventDefault();
-        
-        // Remove any existing notifications first
-        while (notificationContainer.firstChild) {
-            notificationContainer.removeChild(notificationContainer.firstChild);
-        }
-
         const loadingDots = this.querySelector('.loading-dots');
         loadingDots.style.display = 'inline-block';
 
@@ -98,7 +88,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Create and show animated notification
             const notification = document.createElement('div');
-            notification.className = `notification ${response.ok ? 'success' : 'error'}`;
+            notification.className = 'notification';
             notification.innerHTML = `
                 <div class="notification-icon">
                     ${response.ok ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-circle"></i>'}
@@ -109,9 +99,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            notificationContainer.appendChild(notification);
+            document.querySelector('.notification-container').appendChild(notification);
 
-            // Animate notification
+            // Animate notification using anime.js
             anime.timeline({
                 targets: notification,
                 easing: 'easeOutElastic(1, .8)',
@@ -132,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             loadingDots.style.display = 'none';
-            
+            // Show error notification
             const notification = document.createElement('div');
             notification.className = 'notification error';
             notification.innerHTML = `
@@ -145,8 +135,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            notificationContainer.appendChild(notification);
+            document.querySelector('.notification-container').appendChild(notification);
 
+            // Animate error notification
             anime.timeline({
                 targets: notification,
                 easing: 'easeOutElastic(1, .8)',
@@ -162,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 complete: () => notification.remove()
             });
         }
-    });
+    }, { once: true }); // Use once option to ensure the listener runs only once
 
     // Modal functionality for all buttons including header buttons
     document.querySelectorAll('.open-modal, .dropbtn').forEach(button => {
