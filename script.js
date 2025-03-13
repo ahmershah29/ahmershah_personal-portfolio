@@ -65,13 +65,22 @@ document.addEventListener('DOMContentLoaded', () => {
         document.body.appendChild(notificationContainer);
     }
 
-    // Remove existing event listeners first
+    // Clean up any existing event listeners
     const contactForm = document.querySelector('.contact-form');
-    contactForm.onsubmit = null;
+    if (contactForm._submitHandler) {
+        contactForm.removeEventListener('submit', contactForm._submitHandler);
+    }
     
-    // Add single event listener for contact form
-    contactForm.addEventListener('submit', async function(e) {
+    // Create the submit handler function
+    contactForm._submitHandler = async function(e) {
         e.preventDefault();
+        
+        // Remove any existing notifications
+        const notificationContainer = document.querySelector('.notification-container');
+        while (notificationContainer.firstChild) {
+            notificationContainer.removeChild(notificationContainer.firstChild);
+        }
+
         const loadingDots = this.querySelector('.loading-dots');
         loadingDots.style.display = 'inline-block';
 
@@ -86,9 +95,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             loadingDots.style.display = 'none';
             
-            // Create and show animated notification
+            // Create and show single animated notification
             const notification = document.createElement('div');
-            notification.className = 'notification';
+            notification.className = `notification ${response.ok ? '' : 'error'}`;
             notification.innerHTML = `
                 <div class="notification-icon">
                     ${response.ok ? '<i class="fas fa-check-circle"></i>' : '<i class="fas fa-exclamation-circle"></i>'}
@@ -99,9 +108,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            document.querySelector('.notification-container').appendChild(notification);
+            notificationContainer.appendChild(notification);
 
-            // Animate notification using anime.js
+            // Single animation timeline
             anime.timeline({
                 targets: notification,
                 easing: 'easeOutElastic(1, .8)',
@@ -122,7 +131,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } catch (error) {
             loadingDots.style.display = 'none';
-            // Show error notification
+            
+            // Show single error notification
             const notification = document.createElement('div');
             notification.className = 'notification error';
             notification.innerHTML = `
@@ -135,9 +145,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
             `;
 
-            document.querySelector('.notification-container').appendChild(notification);
+            // Remove any existing notifications before adding new one
+            notificationContainer.innerHTML = '';
+            notificationContainer.appendChild(notification);
 
-            // Animate error notification
+            // Single animation timeline for error
             anime.timeline({
                 targets: notification,
                 easing: 'easeOutElastic(1, .8)',
@@ -153,7 +165,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 complete: () => notification.remove()
             });
         }
-    }, { once: true }); // Use once option to ensure the listener runs only once
+    };
+    
+    // Add the event listener only once
+    contactForm.addEventListener('submit', contactForm._submitHandler);
 
     // Modal functionality for all buttons including header buttons
     document.querySelectorAll('.open-modal, .dropbtn').forEach(button => {
