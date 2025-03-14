@@ -1,9 +1,12 @@
 :root {
-  --cursor-color: rgba(212, 175, 55, 0.3); /* Light and transparent gold color */
-  --cursor-size: 30px; /* Increase cursor size */
+  --cursor-color: rgba(212, 175, 55, 0.15); /* More subtle gold color */
+  --cursor-size: 24px; /* Slightly smaller size */
+  --cursor-border-width: 1.5px;
+  --cursor-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+  --cursor-hover-scale: 1.5;
+  --cursor-click-scale: 0.9;
   --cursor-glow-color: rgba(212, 175, 55, 0.8); /* Enhance glowing color */
   --cursor-border-color: rgba(255, 255, 255, 0.8); /* Border color for premium look */
-  --cursor-border-width: 2px; /* Border width */
   --cursor-shadow-color: rgba(255, 215, 0, 0.5); /* Shadow color for premium look */
 }
 
@@ -17,16 +20,61 @@
   height: var(--cursor-size);
   border-radius: 50%;
   background-color: var(--cursor-color);
-  border: var(--cursor-border-width) solid var(--cursor-border-color); /* Add border */
+  border: var(--cursor-border-width) solid var(--gold-color);
   pointer-events: none;
   z-index: 10000;
-  transition: transform 0.1s ease, background-color 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease; /* Add smooth transition for opacity */
-  box-shadow: 0 0 15px var(--cursor-shadow-color), 0 0 30px var(--cursor-shadow-color), 0 0 45px var(--cursor-shadow-color); /* Enhance glowing effect */
+  mix-blend-mode: difference;
+  transition: 
+    width 0.2s ease-in-out,
+    height 0.2s ease-in-out,
+    transform 0.1s ease-in-out,
+    background-color 0.2s ease-in-out;
+  box-shadow: var(--cursor-shadow);
+  transform: translate(-50%, -50%);
 }
 
+.custom-cursor.hovering {
+  width: calc(var(--cursor-size) * var(--cursor-hover-scale));
+  height: calc(var(--cursor-size) * var(--cursor-hover-scale));
+  background-color: var(--cursor-color);
+  mix-blend-mode: normal;
+}
+
+.custom-cursor.clicking {
+  transform: translate(-50%, -50%) scale(var(--cursor-click-scale));
+  background-color: rgba(212, 175, 55, 0.3);
+}
+
+/* Hide custom cursor on touch devices and small screens */
+@media (max-width: 768px), (hover: none) {
+  .custom-cursor {
+    display: none !important;
+  }
+  
+  * {
+    cursor: auto !important;
+  }
+  
+  a, button, input[type="submit"], .clickable {
+    cursor: pointer !important;
+  }
+}
+
+/* Remove old cursor classes */
 .cursor-dot,
 .cursor-hand {
   display: none !important;
+}
+
+/* Hide default cursor only on desktop */
+@media (min-width: 769px) {
+  * {
+    cursor: none !important;
+  }
+  
+  a, button, input[type="submit"], .clickable {
+    cursor: none !important;
+  }
 }
 
 /* Define a custom property for CSS animations */
@@ -793,24 +841,169 @@
     background-color: rgba(0,0,0,0.6);
   }
   .modal-content {
-    background-color: white;
-    margin: 10% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 600px;
-    border-radius: 5px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 2rem;
+    width: 90%;
+    max-width: 800px;
+    margin: 5vh auto;
     position: relative;
-    color: #343a40;
-    transform: perspective(1000px) rotateY(0deg); /* Add 3D perspective */
-    transition: transform 0.3s ease-in-out;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+  }
+  .modal-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+  .modal-header h2 {
+    color: var(--rich-blue);
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0;
+    padding-bottom: 1rem;
+    border-bottom: 3px solid var(--gold-color);
+  }
+  .modal-body {
     display: flex;
     flex-direction: column;
+    gap: 2rem;
+  }
+  .modal-image-container {
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+  .modal-image {
+    width: 100%;
+    max-height: 400px;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  .modal-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .info-section {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+  }
+  .info-label {
+    display: flex;
     align-items: center;
+    gap: 0.5rem;
+    color: var(--rich-blue);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+  .tech-tags, .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+  .modal-footer {
+    margin-top: 2rem;
     text-align: center;
   }
-  .modal-content:hover {
-    transform: perspective(1000px) rotateY(10deg); /* Add 3D rotation on hover */
+  @media (max-width: 768px) {
+    .modal-content {
+      padding: 1.5rem;
+    }
+    .modal-image {
+      max-height: 300px;
+    }
+    .info-section {
+      padding: 1.2rem;
+    }
+  }
+  .modal-image-container {
+    width: 100%;
+    margin-bottom: 1.5rem;
+  }
+  .modal-image {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+  .modal-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  .info-section {
+    background: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    border-left: 4px solid var(--primary-color);
+  }
+  .info-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--rich-blue);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+  }
+  .tech-tags, .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+  .tech-tag, .skill-tag {
+    padding: 0.5rem 1rem;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    transition: transform 0.3s ease;
+  }
+  .tech-tag:hover, .skill-tag:hover {
+    transform: translateY(-2px);
+  }
+  .feature-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .feature-list li {
+    margin-bottom: 0.8rem;
+    padding-left: 1.5rem;
+    position: relative;
+  }
+  .feature-list li:before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--primary-color);
+    font-weight: bold;
+  }
+  .project-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .link-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.8rem 1.5rem;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+  .link-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  }
+  .modal-footer {
+    margin-top: 2rem;
+    text-align: center;
   }
   .modal-close {
     display: none;

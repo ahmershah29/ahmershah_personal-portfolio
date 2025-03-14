@@ -660,3 +660,59 @@ document.addEventListener('DOMContentLoaded', () => {
 
     init();
 });
+
+// Cursor functionality
+function initCustomCursor() {
+  const cursor = document.querySelector('.custom-cursor');
+  if (!cursor) return;
+
+  // Only initialize on desktop
+  if (window.innerWidth <= 768 || !window.matchMedia('(hover: hover)').matches) {
+    cursor.style.display = 'none';
+    return;
+  }
+
+  const updateCursorPosition = (e) => {
+    cursor.style.left = e.clientX + 'px';
+    cursor.style.top = e.clientY + 'px';
+  };
+
+  const addCursorHovering = () => cursor.classList.add('hovering');
+  const removeCursorHovering = () => cursor.classList.remove('hovering');
+  const addCursorClicking = () => cursor.classList.add('clicking');
+  const removeCursorClicking = () => cursor.classList.remove('clicking');
+
+  // Track cursor position
+  document.addEventListener('mousemove', updateCursorPosition);
+  document.addEventListener('scroll', updateCursorPosition);
+
+  // Handle cursor states
+  document.addEventListener('mousedown', addCursorClicking);
+  document.addEventListener('mouseup', removeCursorClicking);
+
+  // Add hover effect for interactive elements
+  const interactiveElements = document.querySelectorAll('a, button, input[type="submit"], .clickable');
+  interactiveElements.forEach(el => {
+    el.addEventListener('mouseenter', addCursorHovering);
+    el.addEventListener('mouseleave', removeCursorHovering);
+  });
+
+  // Show cursor after it's positioned
+  setTimeout(() => {
+    cursor.style.opacity = 1;
+    cursor.style.visibility = 'visible';
+  }, 500);
+}
+
+// Initialize cursor after DOM loads
+document.addEventListener('DOMContentLoaded', initCustomCursor);
+
+// Reinitialize cursor on resize
+window.addEventListener('resize', () => {
+  const cursor = document.querySelector('.custom-cursor');
+  if (window.innerWidth <= 768) {
+    if (cursor) cursor.style.display = 'none';
+  } else {
+    initCustomCursor();
+  }
+});
