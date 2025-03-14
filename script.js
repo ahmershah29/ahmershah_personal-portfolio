@@ -633,6 +633,17 @@ document.addEventListener('DOMContentLoaded', () => {
         controls.noZoom = true;
         controls.staticMoving = true;
         controls.dynamicDampingFactor = 0.3;
+        
+        // Add passive flag to TrackballControls
+        renderer.domElement.addEventListener('touchstart', () => {}, { passive: true });
+        renderer.domElement.addEventListener('touchmove', () => {}, { passive: true });
+        
+        // Prevent default touch behavior only when needed
+        renderer.domElement.addEventListener('touchstart', (e) => {
+            if (e.touches.length > 1) {
+                e.preventDefault();
+            }
+        }, { passive: false });
 
         // Window resize handler
         window.addEventListener('resize', onWindowResize, false);
@@ -666,53 +677,120 @@ function initCustomCursor() {
   const cursor = document.querySelector('.custom-cursor');
   if (!cursor) return;
 
-  // Only initialize on desktop
-  if (window.innerWidth <= 768 || !window.matchMedia('(hover: hover)').matches) {
-    cursor.style.display = 'none';
-    return;
+  let isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  let lastTouchX = 0;
+  let lastTouchY = 0;
+  let isTouch = false;
+  let touchStartY = 0;
+  let isScrolling = false;
+
+  if (isTouchDevice) {
+    cursor.classList.add('touch-device');
   }
 
-  const updateCursorPosition = (e) => {
-    cursor.style.left = e.clientX + 'px';
-    cursor.style.top = e.clientY + 'px';
-  };
+  function updateCursorPosition(x, y) {
+    cursor.style.left = `${x}px`;
+    cursor.style.top = `${y}px`;
+    
+    if (!cursor.style.opacity) {
+      cursor.style.opacity = '1';
+      cursor.style.visibility = 'visible';
+    }
+  }
 
+  // Mouse events
+  document.addEventListener('mousemove', (e) => {
+    if (!isTouch) {
+      updateCursorPosition(e.clientX, e.clientY);
+    }
+  });
+
+  // Touch events
+  document.addEventListener('touchstart', (e) => {
+    touchStartY = e.touches[0].clientY;
+    isScrolling = false;
+    isTouch = true;
+    cursor.classList.add('touch-device');
+    lastTouchX = e.touches[0].clientX;
+    lastTouchY = e.touches[0].clientY;
+    updateCursorPosition(lastTouchX, lastTouchY);
+  }, { passive: true });
+
+  document.addEventListener('touchmove', (e) => {
+    const touchCurrentY = e.touches[0].clientY;
+    const deltaY = touchCurrentY - touchStartY;
+    
+    // Determine if user is scrolling
+    if (Math.abs(deltaY) > 10) {
+        isScrolling = true;
+    }
+
+    if (isTouch && !isScrolling) {
+        lastTouchX = e.touches[0].clientX;
+        lastTouchY = e.touches[0].clientY;
+        updateCursorPosition(lastTouchX, lastTouchY);
+    }
+  }, { passive: true });
+
+  document.addEventListener('touchend', () => {
+    // Keep the cursor visible for a moment after touch
+    setTimeout(() => {
+      if (!document.touchstart) {
+        cursor.style.opacity = '0';
+      }
+    }, 1000);
+  });
+
+  // Handle cursor states for both mouse and touch
   const addCursorHovering = () => cursor.classList.add('hovering');
   const removeCursorHovering = () => cursor.classList.remove('hovering');
   const addCursorClicking = () => cursor.classList.add('clicking');
   const removeCursorClicking = () => cursor.classList.remove('clicking');
 
-  // Track cursor position
-  document.addEventListener('mousemove', updateCursorPosition);
-  document.addEventListener('scroll', updateCursorPosition);
-
-  // Handle cursor states
-  document.addEventListener('mousedown', addCursorClicking);
-  document.addEventListener('mouseup', removeCursorClicking);
-
-  // Add hover effect for interactive elements
+  // Interactive elements
   const interactiveElements = document.querySelectorAll('a, button, input[type="submit"], .clickable');
+  
   interactiveElements.forEach(el => {
     el.addEventListener('mouseenter', addCursorHovering);
     el.addEventListener('mouseleave', removeCursorHovering);
+    el.addEventListener('touchstart', addCursorHovering, { passive: true });
+    el.addEventListener('touchend', removeCursorHovering);
   });
 
-  // Show cursor after it's positioned
-  setTimeout(() => {
-    cursor.style.opacity = 1;
-    cursor.style.visibility = 'visible';
-  }, 500);
+  // Click/touch effects
+  document.addEventListener('mousedown', addCursorClicking);
+  document.addEventListener('mouseup', removeCursorClicking);
+  document.addEventListener('touchstart', addCursorClicking, { passive: true });
+  document.addEventListener('touchend', removeCursorClicking);
+
+  // Handle scroll
+  let scrollTimeout;
+  window.addEventListener('scroll', () => {
+    if (isTouch && !isScrolling && lastTouchX && lastTouchY) {
+        const scrollX = window.scrollX;
+        const scrollY = window.scrollY;
+        updateCursorPosition(lastTouchX + scrollX, lastTouchY + scrollY);
+    }
+    
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(() => {
+        if (isTouch && !isScrolling && lastTouchX && lastTouchY) {
+            updateCursorPosition(lastTouchX, lastTouchY);
+        }
+    }, 100);
+  }, { passive: true });
+
+  // Reset scrolling state on touch end
+  document.addEventListener('touchend', () => {
+    isScrolling = false;
+    setTimeout(() => {
+        if (!document.touchstart) {
+            cursor.style.opacity = '0';
+        }
+    }, 1000);
+  }, { passive: true });
 }
 
-// Initialize cursor after DOM loads
+// Initialize cursor and handle window resize
 document.addEventListener('DOMContentLoaded', initCustomCursor);
-
-// Reinitialize cursor on resize
-window.addEventListener('resize', () => {
-  const cursor = document.querySelector('.custom-cursor');
-  if (window.innerWidth <= 768) {
-    if (cursor) cursor.style.display = 'none';
-  } else {
-    initCustomCursor();
-  }
-});
+window.addEventListener('resize', initCustomCursor);

@@ -2559,3 +2559,43 @@ nav a,
     grid-template-columns: 1fr;
   }
 }
+
+/* New cursor styles for touch devices */
+@media (hover: hover) and (pointer: fine) {
+  * {
+    cursor: none !important;
+  }
+  
+  a, button, input[type="submit"], .clickable {
+    cursor: none !important;
+  }
+}
+
+.custom-cursor {
+  position: fixed;
+  width: var(--cursor-size);
+  height: var(--cursor-size);
+  border-radius: 50%;
+  background-color: var(--cursor-color);
+  border: var(--cursor-border-width) solid var(--cursor-border-color);
+  pointer-events: none;
+  z-index: 10000;
+  mix-blend-mode: difference;
+  transition: transform 0.15s ease-out;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0;
+  visibility: hidden;
+}
+
+.custom-cursor.touch-device {
+  width: calc(var(--cursor-size) * 1.5);
+  height: calc(var(--cursor-size) * 1.5);
+  opacity: 0.6;
+  animation: pulseAnimation 2s infinite;
+}
+
+@keyframes pulseAnimation {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -50%) scale(1.2); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
