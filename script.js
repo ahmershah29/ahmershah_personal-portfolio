@@ -492,76 +492,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 1000);
 
-    // Custom cursor functionality
-    const cursor = document.createElement('div');
-    cursor.classList.add('custom-cursor');
-    document.body.appendChild(cursor);
-
-    let mouseX = 0, mouseY = 0;
-    let cursorX = 0, cursorY = 0;
-
-    document.addEventListener('mousemove', (e) => {
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-    });
-
-    function animateCursor() {
-        const dx = mouseX - cursorX;
-        const dy = mouseY - cursorY;
-        cursorX += dx * 0.2;
-        cursorY += dy * 0.2;
-        cursor.style.left = `${cursorX}px`;
-        cursor.style.top = `${cursorY}px`;
-
-        requestAnimationFrame(animateCursor);
-    }
-    animateCursor();
-
-    document.addEventListener('mouseout', () => {
-        cursor.style.opacity = '0';
-    });
-
-    document.addEventListener('mouseover', () => {
-        cursor.style.opacity = '1';
-    });
-
-    document.querySelectorAll('button, .cta-button, .about-button, .resume-button, nav a, .social-media a').forEach(button => {
-        button.addEventListener('mouseover', () => {
-            cursor.style.transform = 'scale(1.2)';
-        });
-        button.addEventListener('mouseout', () => {
-            cursor.style.transform = 'scale(1)';
-        });
-        button.addEventListener('mousedown', () => {
-            cursor.style.transform = 'scale(0.9)';
-        });
-        button.addEventListener('mouseup', () => {
-            cursor.style.transform = 'scale(1.2)';
-        });
-    });
-
-    // Enhance 3D effect for scrollbar
-    const scrollbarThumb = document.querySelector('::-webkit-scrollbar-thumb');
-    if (scrollbarThumb) {
-        scrollbarThumb.style.transition = 'background-color 0.3s ease, box-shadow 0.3s ease';
-        scrollbarThumb.addEventListener('mouseover', () => {
-            scrollbarThumb.style.backgroundColor = 'var(--secondary-color)';
-            scrollbarThumb.style.boxShadow = '0 0 15px rgba(0, 0, 0, 0.3)';
-        });
-        scrollbarThumb.addEventListener('mouseout', () => {
-            scrollbarThumb.style.backgroundColor = 'var(--primary-color)';
-            scrollbarThumb.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.2)';
-        });
-        scrollbarThumb.addEventListener('mousedown', () => {
-            scrollbarThumb.style.backgroundColor = 'var(--dark-color)';
-            scrollbarThumb.style.boxShadow = '0 0 20px rgba(0, 0, 0, 0.4)';
-        });
-        scrollbarThumb.addEventListener('mouseup', () => {
-            scrollbarThumb.style.backgroundColor = 'var(--primary-color)';
-            scrollbarThumb.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.2)';
-        });
-    }
-
     // Three.js initialization for 3D animated background
     let scene, camera, renderer, particles, particleSystem, controls;
 
@@ -670,127 +600,70 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     init();
+    initResponsive();
 });
 
-// Cursor functionality
-function initCustomCursor() {
-  const cursor = document.querySelector('.custom-cursor');
-  if (!cursor) return;
-
-  let isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  let lastTouchX = 0;
-  let lastTouchY = 0;
-  let isTouch = false;
-  let touchStartY = 0;
-  let isScrolling = false;
-
-  if (isTouchDevice) {
-    cursor.classList.add('touch-device');
-  }
-
-  function updateCursorPosition(x, y) {
-    cursor.style.left = `${x}px`;
-    cursor.style.top = `${y}px`;
+function initResponsive() {
+    // Device detection
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     
-    if (!cursor.style.opacity) {
-      cursor.style.opacity = '1';
-      cursor.style.visibility = 'visible';
-    }
-  }
-
-  // Mouse events
-  document.addEventListener('mousemove', (e) => {
-    if (!isTouch) {
-      updateCursorPosition(e.clientX, e.clientY);
-    }
-  });
-
-  // Touch events
-  document.addEventListener('touchstart', (e) => {
-    touchStartY = e.touches[0].clientY;
-    isScrolling = false;
-    isTouch = true;
-    cursor.classList.add('touch-device');
-    lastTouchX = e.touches[0].clientX;
-    lastTouchY = e.touches[0].clientY;
-    updateCursorPosition(lastTouchX, lastTouchY);
-  }, { passive: true });
-
-  document.addEventListener('touchmove', (e) => {
-    const touchCurrentY = e.touches[0].clientY;
-    const deltaY = touchCurrentY - touchStartY;
+    // Add classes for device-specific styling
+    document.body.classList.toggle('is-mobile', isMobile);
+    document.body.classList.toggle('is-touch', isTouch);
     
-    // Determine if user is scrolling
-    if (Math.abs(deltaY) > 10) {
-        isScrolling = true;
+    // Adjust modal behavior for mobile
+    const modals = document.querySelectorAll('.modal');
+    if(isMobile) {
+      modals.forEach(modal => {
+        modal.addEventListener('touchmove', e => {
+          e.preventDefault();
+        }, { passive: false });
+      });
     }
-
-    if (isTouch && !isScrolling) {
-        lastTouchX = e.touches[0].clientX;
-        lastTouchY = e.touches[0].clientY;
-        updateCursorPosition(lastTouchX, lastTouchY);
-    }
-  }, { passive: true });
-
-  document.addEventListener('touchend', () => {
-    // Keep the cursor visible for a moment after touch
-    setTimeout(() => {
-      if (!document.touchstart) {
-        cursor.style.opacity = '0';
+    
+    // Responsive image loading
+    const images = document.querySelectorAll('img[data-src]');
+    const loadImage = (img) => {
+      const src = img.getAttribute('data-src');
+      if(!src) return;
+      img.src = src;
+    };
+    
+    const imageObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if(entry.isIntersecting) {
+          loadImage(entry.target);
+          imageObserver.unobserve(entry.target);
+        }
+      });
+    });
+    
+    images.forEach(img => imageObserver.observe(img));
+    
+    // Responsive chart sizing
+    const resizeChart = () => {
+      if(window.ApexCharts) {
+        const chart = document.querySelector('#skillsChart');
+        if(chart) {
+          chart.style.height = window.innerWidth < 768 ? '300px' : '350px';
+        }
       }
-    }, 1000);
-  });
-
-  // Handle cursor states for both mouse and touch
-  const addCursorHovering = () => cursor.classList.add('hovering');
-  const removeCursorHovering = () => cursor.classList.remove('hovering');
-  const addCursorClicking = () => cursor.classList.add('clicking');
-  const removeCursorClicking = () => cursor.classList.remove('clicking');
-
-  // Interactive elements
-  const interactiveElements = document.querySelectorAll('a, button, input[type="submit"], .clickable');
-  
-  interactiveElements.forEach(el => {
-    el.addEventListener('mouseenter', addCursorHovering);
-    el.addEventListener('mouseleave', removeCursorHovering);
-    el.addEventListener('touchstart', addCursorHovering, { passive: true });
-    el.addEventListener('touchend', removeCursorHovering);
-  });
-
-  // Click/touch effects
-  document.addEventListener('mousedown', addCursorClicking);
-  document.addEventListener('mouseup', removeCursorClicking);
-  document.addEventListener('touchstart', addCursorClicking, { passive: true });
-  document.addEventListener('touchend', removeCursorClicking);
-
-  // Handle scroll
-  let scrollTimeout;
-  window.addEventListener('scroll', () => {
-    if (isTouch && !isScrolling && lastTouchX && lastTouchY) {
-        const scrollX = window.scrollX;
-        const scrollY = window.scrollY;
-        updateCursorPosition(lastTouchX + scrollX, lastTouchY + scrollY);
-    }
+    };
     
-    clearTimeout(scrollTimeout);
-    scrollTimeout = setTimeout(() => {
-        if (isTouch && !isScrolling && lastTouchX && lastTouchY) {
-            updateCursorPosition(lastTouchX, lastTouchY);
-        }
-    }, 100);
-  }, { passive: true });
-
-  // Reset scrolling state on touch end
-  document.addEventListener('touchend', () => {
-    isScrolling = false;
-    setTimeout(() => {
-        if (!document.touchstart) {
-            cursor.style.opacity = '0';
-        }
-    }, 1000);
-  }, { passive: true });
-}
-
-// Initialize cursor and handle window resize
-document.addEventListener('DOMContentLoaded', initCustomCursor);
-window.addEventListener('resize', initCustomCursor);
+    window.addEventListener('resize', debounce(resizeChart, 250));
+    resizeChart();
+  }
+  
+  // Debounce helper
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
