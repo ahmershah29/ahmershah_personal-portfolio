@@ -837,6 +837,46 @@ textarea:focus {
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
 }
 
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.modal-image-container {
+  width: 100%;
+  max-height: 400px;
+  overflow: hidden;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.modal-image {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.modal-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .modal-content {
+    padding: 1.5rem;
+    margin: 2vh auto;
+  }
+  
+  .modal-image-container {
+    max-height: 300px;
+  }
+}
+
 .modal-header {
   text-align: center;
   margin-bottom: 2rem;
@@ -851,10 +891,10 @@ textarea:focus {
   border-bottom: 3px solid var(--gold-color);
 }
 
-.modal-body {
+.modal-info {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 1.5rem;
 }
 
 .modal-image-container {
@@ -864,15 +904,14 @@ textarea:focus {
 
 .modal-image {
   width: 100%;
-  max-height: 400px;
-  object-fit: contain;
+  height: auto;
   border-radius: 8px;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 .modal-info {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 1.5rem;
 }
 
@@ -2803,4 +2842,20 @@ nav a,
     min-height: 44px;
     padding: 0.8rem;
   }
+}
+
+#header-logo-3d, #home-logo-3d {
+  width: 100px;
+  height: 100px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+/* Adjust the position of the 3D model in the home section */
+#home-logo-3d {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
