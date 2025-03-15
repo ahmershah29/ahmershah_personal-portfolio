@@ -602,127 +602,69 @@ document.addEventListener('DOMContentLoaded', () => {
     init();
     initResponsive();
 
-    // Initialize Three.js for header logo
-    function initHeaderLogo3D() {
-        const container = document.getElementById('header-logo-3d');
-        if (!container) return;
-    
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ alpha: true });
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        container.appendChild(renderer.domElement);
-    
-        const loader = new THREE.GLTFLoader();
-        loader.load('https://sketchfab.com/models/b76ed38dafec4f84ac1f48d4a17243eb/embed', (gltf) => {
-          const model = gltf.scene;
-          scene.add(model);
-          camera.position.z = 2;
-    
-          function animate() {
-            requestAnimationFrame(animate);
-            model.rotation.y += 0.01;
-            renderer.render(scene, camera);
-          }
-          animate();
-        }, undefined, (error) => {
-          console.error('An error occurred while loading the 3D model:', error);
-        });
-    }
-    
-    // Initialize Three.js for home section logo
-    function initHomeLogo3D() {
-        const container = document.getElementById('home-logo-3d');
-        if (!container) return;
-    
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ alpha: true });
-        renderer.setSize(container.clientWidth, container.clientHeight);
-        container.appendChild(renderer.domElement);
-    
-        const loader = new THREE.GLTFLoader();
-        loader.load('https://sketchfab.com/models/b76ed38dafec4f84ac1f48d4a17243eb/embed', (gltf) => {
-          const model = gltf.scene;
-          scene.add(model);
-          camera.position.z = 2;
-    
-          function animate() {
-            requestAnimationFrame(animate);
-            model.rotation.y += 0.01;
-            renderer.render(scene, camera);
-          }
-          animate();
-        }, undefined, (error) => {
-          console.error('An error occurred while loading the 3D model:', error);
-        });
-    }
-    
-    initHeaderLogo3D();
-    initHomeLogo3D();
-});
-
-function initResponsive() {
-    // Device detection
-    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-    
-    // Add classes for device-specific styling
-    document.body.classList.toggle('is-mobile', isMobile);
-    document.body.classList.toggle('is-touch', isTouch);
-    
-    // Adjust modal behavior for mobile
-    const modals = document.querySelectorAll('.modal');
-    if(isMobile) {
-      modals.forEach(modal => {
-        modal.addEventListener('touchmove', e => {
-          e.preventDefault();
-        }, { passive: false });
-      });
-    }
-    
-    // Responsive image loading
-    const images = document.querySelectorAll('img[data-src]');
-    const loadImage = (img) => {
-      const src = img.getAttribute('data-src');
-      if(!src) return;
-      img.src = src;
-    };
-    
-    const imageObserver = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if(entry.isIntersecting) {
-          loadImage(entry.target);
-          imageObserver.unobserve(entry.target);
+    // Continue with existing responsive initialization
+    function initResponsive() {
+        // Device detection
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+        const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+        
+        // Add classes for device-specific styling
+        document.body.classList.toggle('is-mobile', isMobile);
+        document.body.classList.toggle('is-touch', isTouch);
+        
+        // Adjust modal behavior for mobile
+        const modals = document.querySelectorAll('.modal');
+        if(isMobile) {
+          modals.forEach(modal => {
+            modal.addEventListener('touchmove', e => {
+              e.preventDefault();
+            }, { passive: false });
+          });
         }
-      });
-    });
-    
-    images.forEach(img => imageObserver.observe(img));
-    
-    // Responsive chart sizing
-    const resizeChart = () => {
-      if(window.ApexCharts) {
-        const chart = document.querySelector('#skillsChart');
-        if(chart) {
-          chart.style.height = window.innerWidth < 768 ? '300px' : '350px';
-        }
+        
+        // Responsive image loading
+        const images = document.querySelectorAll('img[data-src]');
+        const loadImage = (img) => {
+          const src = img.getAttribute('data-src');
+          if(!src) return;
+          img.src = src;
+        };
+        
+        const imageObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if(entry.isIntersecting) {
+              loadImage(entry.target);
+              imageObserver.unobserve(entry.target);
+            }
+          });
+        });
+        
+        images.forEach(img => imageObserver.observe(img));
+        
+        // Responsive chart sizing
+        const resizeChart = () => {
+          if(window.ApexCharts) {
+            const chart = document.querySelector('#skillsChart');
+            if(chart) {
+              chart.style.height = window.innerWidth < 768 ? '300px' : '350px';
+            }
+          }
+        };
+        
+        window.addEventListener('resize', debounce(resizeChart, 250));
+        resizeChart();
       }
-    };
-    
-    window.addEventListener('resize', debounce(resizeChart, 250));
-    resizeChart();
-  }
-  
-  // Debounce helper
-  function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
-  }
+      
+      // Debounce helper
+      function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+          const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+          };
+          clearTimeout(timeout);
+          timeout = setTimeout(later, wait);
+        };
+      }
+});
